@@ -30,10 +30,11 @@ def parseStatus(jsonSolrDataImportStatus):
 
 	return result
 
-def sendToGraphite(graphSrv, graphPrt, pfx, host, metrics):
+def sendToGraphite(graphSrv, graphPrt, pfx, host, solr_col, metrics):
 	# clean host data
 	ch = host.replace(".", "_")
 
+	pfx = "%s.%s" % (pfx, solr_col,)
 	g = graphitesend.init(graphite_server=graphSrv, graphite_port=graphPrt, prefix=pfx, system_name=ch)
 	for metric in metrics:
 		g.send(metric, metrics[metric])
@@ -56,10 +57,10 @@ if __name__ == '__main__':
 		sys.exit(2)
 	
 	jc = jsonConfig
-	foreach item in jc['solr_monitor_list']:
+	for item in jc['solr_monitor_list']:
 		custom_url = jc['solr_dataimport_url_format'] % (item['solr_webinterface_protocol'], item['solr_host'], item['solr_host_port'], item['solr_collection'], )
 	
 		json = getSolrDataImportStatus(custom_url)
 		res = parseStatus(json)
 	
-		sendToGraphite(jc['graphite_server', jc['graphite_port'], jc['graphite_prefix'], item['solr_host'], res)
+		sendToGraphite(jc['graphite_server'], jc['graphite_port'], jc['graphite_prefix'], item['solr_host'], item['solr_collection'], res)
